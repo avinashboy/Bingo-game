@@ -1,0 +1,139 @@
+@import url('https://fonts.googleapis.com/css2?family=Kufam:ital,wght@0,700;1,400&display=swap');
+
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root{
+  --mainColor: #f39c12;
+  --subColor: #4c4c4c;
+  --dark:#767c77;
+}
+
+.show-player{
+font-family: 'Kufam',cursive;
+font-style: italic;
+font-weight: 400;
+}
+
+.show-player > span{
+  margin: 0 5px;
+  color: var(--subColor);
+}
+
+.active{
+  color: var(--subColor) !important;
+  font-size: 25px;
+  margin: 0 10px;
+  padding: 5px 10px;
+  background-color: var(--mainColor) !important;
+  border-radius: 10px;
+  font-weight: 700;
+  font-family: 'Kufam',cursive;
+}
+
+.lead{
+  color: var(--mainColor);
+  font-family: 'Kufam',cursive;
+  font-weight: 700;
+  font-size: 60px;
+  margin-top: 3rem;
+  position: relative;
+  margin-bottom: 2rem;
+}
+
+.done_color{
+  color: var(--subColor);
+}
+
+.play-area{
+  max-width: 500px;
+  max-height: 600px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  justify-content: center;
+  align-content: center;
+  margin: 0 auto;
+  margin-bottom: 2rem;
+}
+
+.play-area > button{
+  background-color:transparent;
+  padding: 10px;
+  margin: 10px;
+  max-width: 200px;
+  max-height: 100px;
+  border: 1px solid var(--mainColor);
+  border-radius: 5px;
+  text-align: center;
+  font-family: 'Kufam',cursive;
+  font-style: italic;
+  font-weight: 400;
+  color: var(--subColor);
+}
+
+button:focus{
+  outline: none;
+}
+
+.dim{
+  opacity: 0.5;
+  color: var(--dark);
+  z-index: -10;
+  cursor: none;
+}
+
+.dim>button{
+cursor: none;
+z-index: -10;
+}
+
+.already_press {
+  opacity: 0.5;
+  border: 1px solid var(--dark) !important;
+  z-index: -10;
+  cursor: none;
+}
+
+.users{
+  font-size: 24px;
+  margin: 5px ;
+  color: var(--subColor);
+  margin-left: -22rem;
+}
+
+.leads {
+  color: var(--mainColor);
+  font-family: 'Kufam', cursive;
+  font-weight: 700;
+  font-size: 60px;
+  margin-top: 3rem;
+  position: relative;
+  margin-bottom: 2rem;
+  animation: jump 4.5s infinite;
+}
+
+
+@keyframes jump {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.5);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+
+}
+
+
+  @media (max-width: 500px) {
+    .users {
+      margin-left: -14rem;
+    }
+  }
