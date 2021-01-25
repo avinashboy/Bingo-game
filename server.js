@@ -23,7 +23,7 @@ app.use(express.urlencoded({ extended: true }))
 
 
 // lister
-const server = app.listen(port,  () => {
+const server = app.listen(port, () => {
   console.log(`lister is port on ${port}`);
 });
 
@@ -43,7 +43,7 @@ app.get('/join', (req, res) => {
   })
 })
 
-app.post('/create', (req, res) => {
+app.get('/create', (req, res) => {
   let playload = guid()
   rooms[playload] = {
     users: {}
@@ -66,14 +66,14 @@ io.on('connection', (socket) => {
     console.log(` socket is connected ${socket.id}`)
   })
 
-  socket.on("user-name", data => { 
+  socket.on("user-name", data => {
     socket.join(data.room)
     rooms[data.room].users[socket.id] = data.name
     const clientName = data.name
     const gameId = data.room
     const game = games[gameId]
 
-    if (game.clients.length >= 3) return "create new game"
+    if (game.clients.length >= game.max) return socket.emit("goto-main-page")
 
     game.clients.push({
       "clientName": clientName
@@ -85,25 +85,25 @@ io.on('connection', (socket) => {
     const clientName = data.name
     const gameId = data.room
     const game = games[gameId]
-    console.log(game.clients)
+
     game.showin.push({
       "clientName": clientName
     })
     socket.to(data.room).broadcast.emit('swin', data.name);
-    if(game.showin.length === toPop) delete games[data.room], console.log("delete")
+    if (game.showin.length === toPop) delete games[data.room]
   })
 
   socket.on("number", data => {
     const gameId = data.room
     const game = games[gameId]
-    console.log(games)
     try {
-      io.sockets.to(data.room).emit('number', {name: data.altName, number: data.number, clients: game.clients});
+      if (game !== undefined) return io.sockets.to(data.room).emit('number', { name: data.altName, number: data.number, clients: game.clients });
+
       throw "We delete";
     } catch (e) {
-      console.log(e);
+      console.log("error from catch", e);
     }
-    
+
   })
 
   socket.on('disconnect', () => {
