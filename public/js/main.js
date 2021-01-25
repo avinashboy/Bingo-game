@@ -1,14 +1,9 @@
-const url = "http://localhost:3000"
 const socket = io.connect(url)
 const demo = document.getElementById('demo')
 
 const btn = document.getElementById('btn')
 btn.addEventListener("click", () => {
-
-  $.ajax({
-    type: "POST",
-    url: `${url}/create`,
-  });
+  axios.get(`${url}/create`)
   $('#btn').fadeOut()
   $('.hide_me').fadeIn()
 })
