@@ -1,6 +1,6 @@
 # Bingo Game
 
-## <a href="https://bingo-games.herokuapp.com/">LIVE DEMO</a>
+## <a href="https://bingogp.onrender.com/">LIVE DEMO</a>
 
 
 ![Bingo](bingo.png?raw=true "Bingo")
@@ -15,11 +15,9 @@
 - <img height="20" src="https://avatars.githubusercontent.com/u/10566080?s=200&v=4">
 
 #### PROCEDURE:
-- Download the zip folder from Github and unzip it
-Here is the link to download zip 👉
-<a href='https://github.com/avinashboy/Bingo-games'>HERE</a>
+- Download the Code from GitHub and unzip it.
 - Open the folder in VS Code
 - RUN <code>npm install</code> , this command pulls out all the require node modules
-- RUN <code>npm start</code>, this command will start your file in localhost <a href="http://localhost:3000">http://localhost:3000</a>
+- RUN <code>npm dev</code>, this command will start your file in localhost <a href="http://localhost:3000">http://localhost:3000</a>
 
 #### This is project collaboration with <a href="https: //github.com/nibfic99">nibfic99</a>
