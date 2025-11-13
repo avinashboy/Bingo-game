@@ -82,12 +82,14 @@ button:focus{
   opacity: 0.5;
   color: var(--dark);
   z-index: -10;
-  cursor: none;
+  cursor: not-allowed;
+  pointer-events: none; /* Prevent any clicks on dimmed area */
 }
 
 .dim>button{
-cursor: none;
-z-index: -10;
+  cursor: not-allowed;
+  z-index: -10;
+  pointer-events: none; /* Prevent clicks on individual buttons */
 }
 
 .already_press {
