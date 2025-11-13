@@ -83,8 +83,8 @@ app.get('/create', (req, res) => {
 
   roomTimestamps[roomId] = Date.now()
 
-  // Only emit to the creator (more efficient than io.emit to all)
-  res.render('index', { newRoomId: roomId })
+  // Return JSON response with room ID
+  res.json({ roomId: roomId })
 })
 
 
