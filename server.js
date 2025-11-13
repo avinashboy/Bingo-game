@@ -22,9 +22,9 @@ app.use(express.urlencoded({ extended: true }))
 
 
 
-// lister
+// listener
 const server = app.listen(port, () => {
-  console.log(`lister is port on ${port}`);
+  console.log(`listening on port ${port}`);
 });
 
 const io = socket(server)
@@ -97,9 +97,9 @@ io.on('connection', (socket) => {
     const gameId = data.room
     const game = games[gameId]
     try {
-      if (game !== undefined) return io.sockets.to(data.room).emit('number', { name: data.altName, number: data.number, clients: game.clients });
+      if (game === undefined) throw "Game not found or has been deleted";
 
-      throw "We delete";
+      io.sockets.to(data.room).emit('number', { name: data.altName, number: data.number, clients: game.clients });
     } catch (e) {
       console.log("error from catch", e);
     }
