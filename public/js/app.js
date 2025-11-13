@@ -113,6 +113,12 @@ socket.on("list_of_user", (data) => {
   // Start game when all required players have joined
   if (data.clients.length >= (data.min || 2) && data.clients.length === data.max) {
     runOnetime()
+
+    // FIX BUG 1: Initialize first player as active when game starts
+    if (!GameState.activePlayerName && data.clients.length > 0) {
+      GameState.activePlayerName = data.clients[0].clientName
+    }
+
     updatePlayerList(data.clients)
     initializeGame()
   } else {
@@ -225,16 +231,22 @@ function initializeNumbers() {
 function handleNumberClick(event) {
   if (event.target.tagName.toLowerCase() !== 'button') return
 
-  // Calculate next player in turn order
+  // FIX BUG 3: Only allow clicks if it's this player's turn
+  if (GameState.activePlayerName !== playerName) {
+    return // Not this player's turn
+  }
+
+  // Calculate next player in round-robin fashion
   const currentPlayerIndex = GameState.playerList.indexOf(playerName)
   const nextPlayerIndex = (currentPlayerIndex + 1) % GameState.playerList.length
   const nextPlayerName = GameState.playerList[nextPlayerIndex]
 
   // Mark number as selected
   $(`#${event.target.id}`).addClass('already_press')
-  document.getElementById("play-area").classList.add("dim")
 
-  // Emit to server
+  // FIX BUG 3: Removed redundant dim class - updatePlayerList handles this
+
+  // Emit to server with next player's turn
   socket.emit("number", {
     number: parseInt(event.target.innerText),
     room: roomId,
@@ -354,16 +366,9 @@ function updatePlayerList(clientsArray) {
     const span = document.createElement('span')
     span.innerText = clientName
 
-    // Highlight active player's turn
+    // Highlight active player's turn with bubble
     if (GameState.activePlayerName === clientName) {
       span.setAttribute('class', 'active')
-    }
-
-    // Enable/disable play area based on turn
-    if (GameState.activePlayerName === playerName) {
-      document.getElementById("play-area").classList.remove("dim")
-    } else {
-      document.getElementById("play-area").classList.add("dim")
     }
 
     fragment.appendChild(span)
@@ -372,6 +377,14 @@ function updatePlayerList(clientsArray) {
   // Single DOM update
   showPlayer.innerHTML = ""
   showPlayer.appendChild(fragment)
+
+  // FIX BUG 2: Enable/disable play area AFTER loop (not inside it)
+  // Only the current active player can click buttons
+  if (GameState.activePlayerName === playerName) {
+    document.getElementById("play-area").classList.remove("dim")
+  } else {
+    document.getElementById("play-area").classList.add("dim")
+  }
 }
 
 
