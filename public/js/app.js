@@ -78,6 +78,26 @@ socket.on("goto-main-page", (data) => {
   window.location = url
 })
 
+// Set up share link
+const shareLink = `${url}/join?game=${roomId}`
+$('#shareLink').val(shareLink)
+
+// Set up clipboard for copy button
+const clipboard = new ClipboardJS('#copyShareLink', {
+  text: function() {
+    return shareLink
+  }
+})
+
+clipboard.on('success', function(e) {
+  const btn = $('#copyShareLink')
+  const originalText = btn.html()
+  btn.html('<i class="fas fa-check"></i> Copied!')
+  setTimeout(() => {
+    btn.html(originalText)
+  }, 2000)
+})
+
 socket.emit("user-name", {
   name: playerName,
   room: roomId
@@ -86,7 +106,11 @@ socket.emit("user-name", {
 socket.on("list_of_user", (data) => {
   GameState.maxNumber = data.number
 
-  // Start game when minimum players are reached and room is ready
+  // Update waiting screen with player count
+  $('#joinedCount').text(data.clients.length)
+  $('#maxCount').text(data.max)
+
+  // Start game when all required players have joined
   if (data.clients.length >= (data.min || 2) && data.clients.length === data.max) {
     runOnetime()
     updatePlayerList(data.clients)

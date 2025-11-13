@@ -8,6 +8,7 @@
     content=" script-src 'self' https://cdnjs.cloudflare.com https://code.jquery.com;" />
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js"></script>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" />
   <link rel="stylesheet" href="./css/style.css">
@@ -16,7 +17,22 @@
 </head>
 <body class="text-center">
   <h2 style="display:none;" id="id"><%=roomName%></h2>
-  <div class="loader">Wait for player</div>
+  <div class="loader">
+    <div>
+      <h3>Waiting for players to join...</h3>
+      <p id="playerCountDisplay">Players joined: <span id="joinedCount">0</span> / <span id="maxCount">0</span></p>
+      <p style="font-size: 14px; margin-top: 20px;">Share this link with your friends:</p>
+      <div style="margin-top: 10px;">
+        <input type="text" id="shareLink" readonly style="width: 80%; padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+        <button id="copyShareLink" style="padding: 8px 16px; margin-left: 10px; cursor: pointer; border-radius: 4px; background: #f39c12; color: white; border: none;">
+          <i class="fas fa-copy"></i> Copy
+        </button>
+      </div>
+      <div class="spinner-border text-primary mt-3" role="status">
+        <span class="sr-only">Loading...</span>
+      </div>
+    </div>
+  </div>
   <h1 id="winBg"></h1>
   <ul id="show">
   </ul>

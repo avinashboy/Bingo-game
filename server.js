@@ -66,18 +66,23 @@ app.get('/join', (req, res) => {
 
 app.get('/create', (req, res) => {
   const roomId = guid()
+  const maxPlayers = parseInt(req.query.maxPlayers) || config.ROOM.MAX_PLAYERS
+
+  // Validate player count (2-6)
+  const validMaxPlayers = Math.max(config.ROOM.MIN_PLAYERS, Math.min(maxPlayers, config.ROOM.MAX_PLAYERS))
 
   // Initialize room with proper structure
   rooms[roomId] = {
     users: {},
-    createdAt: Date.now()
+    createdAt: Date.now(),
+    maxPlayers: validMaxPlayers
   }
 
   games[roomId] = {
     clients: [],
     showin: [],
     number: config.GAME.MAX_NUMBER,
-    max: config.ROOM.MAX_PLAYERS, // Now supports 6 players
+    max: validMaxPlayers, // Use the selected player count
     min: config.ROOM.MIN_PLAYERS  // Minimum 2 players required
   }
 
@@ -135,7 +140,7 @@ io.on('connection', (socket) => {
     // Update room activity timestamp
     roomTimestamps[roomId] = Date.now()
 
-    // Notify all players in the room
+    // Notify all players in the room about updated player list
     io.sockets.to(roomId).emit('list_of_user', game)
   })
 

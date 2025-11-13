@@ -14,10 +14,8 @@
   <meta http-equiv="Content-Security-Policy"
     content=" script-src  'self' https://cdnjs.cloudflare.com https://code.jquery.com; " />
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>  
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
   <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" />
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 
@@ -114,10 +112,17 @@ color: rgba(255, 255, 255, 1) !important;
     </div>
   </nav>
   <div class="container pt-5">
+    <div class="mb-3">
+      <label for="playerCount" class="form-label">Number of Players:</label>
+      <select class="form-control" id="playerCount" style="max-width: 200px;">
+        <option value="2">2 Players</option>
+        <option value="3">3 Players</option>
+        <option value="4">4 Players</option>
+        <option value="5">5 Players</option>
+        <option value="6">6 Players</option>
+      </select>
+    </div>
     <button class="btn btn-primary bgg" id="btn">create room</button>
-    <input class="hide_me" type="text" id="demo">
-    <button class="btn btn-primary hide_me bgg" data-clipboard-action="copy" data-clipboard-target="#demo"><i
-        class="fas fa-copy"></i></button>
   </div>
 
 
