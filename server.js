@@ -149,11 +149,17 @@ io.on('connection', (socket) => {
     const gameId = data.room
     const game = games[gameId]
 
+    if (!game) return // Game already deleted
+
     game.showin.push({
       "clientName": clientName
     })
     socket.to(data.room).broadcast.emit('swin', data.name);
-    if (game.showin.length === toPop) delete games[data.room]
+
+    // Clean up game when all but one player has won (last player is still playing)
+    if (game.showin.length === game.max - 1) {
+      delete games[data.room]
+    }
   })
 
   socket.on("number", data => {
