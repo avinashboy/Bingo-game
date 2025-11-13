@@ -4,8 +4,17 @@ const demo = document.getElementById('demo')
 const btn = document.getElementById('btn')
 btn.addEventListener("click", () => {
   axios.get(`${url}/create`)
-  $('#btn').fadeOut()
-  $('.hide_me').fadeIn()
+    .then(response => {
+      if (response.data && response.data.roomId) {
+        demo.value = `${url}/join?game=${response.data.roomId}`
+        $('#btn').fadeOut()
+        $('.hide_me').fadeIn()
+      }
+    })
+    .catch(error => {
+      console.error('Error creating room:', error)
+      alert('Failed to create room. Please try again.')
+    })
 })
 
 
