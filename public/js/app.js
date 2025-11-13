@@ -136,13 +136,36 @@ socket.on("swin", (playerName) => {
 socket.on("number", (data) => {
   if (data.clients && data.clients.length > 0) {
     checkStrike(data.number)
-    GameState.activePlayerName = data.name
+
+    // Validate that the new active player exists in the current player list
+    const playerExists = data.clients.some(client => client.clientName === data.name)
+
+    if (playerExists) {
+      GameState.activePlayerName = data.name
+    } else {
+      // Fallback: if player doesn't exist, default to first player
+      console.warn(`Player ${data.name} not found in player list, defaulting to first player`)
+      GameState.activePlayerName = data.clients[0].clientName
+    }
+
     updatePlayerList(data.clients)
   }
 })
 
 socket.on("player-disconnected", (data) => {
   alert(`${data.playerName} disconnected from the game`)
+
+  // Update active player if the server calculated a new one
+  if (data.nextActivePlayer) {
+    GameState.activePlayerName = data.nextActivePlayer
+  } else if (GameState.activePlayerName === data.playerName) {
+    // If disconnected player had the turn but server didn't provide next player,
+    // calculate it locally as fallback
+    if (data.remainingPlayers && data.remainingPlayers.length > 0) {
+      GameState.activePlayerName = data.remainingPlayers[0].clientName
+    }
+  }
+
   if (data.remainingPlayers) {
     updatePlayerList(data.remainingPlayers)
   }
@@ -233,6 +256,7 @@ function handleNumberClick(event) {
 
   // FIX BUG 3: Only allow clicks if it's this player's turn
   if (GameState.activePlayerName !== playerName) {
+    console.log(`Not your turn! Active player: ${GameState.activePlayerName}`)
     return // Not this player's turn
   }
 
@@ -240,6 +264,8 @@ function handleNumberClick(event) {
   const currentPlayerIndex = GameState.playerList.indexOf(playerName)
   const nextPlayerIndex = (currentPlayerIndex + 1) % GameState.playerList.length
   const nextPlayerName = GameState.playerList[nextPlayerIndex]
+
+  console.log(`Turn rotation: ${playerName} (index ${currentPlayerIndex}) → ${nextPlayerName} (index ${nextPlayerIndex})`)
 
   // Mark number as selected
   $(`#${event.target.id}`).addClass('already_press')
@@ -382,8 +408,10 @@ function updatePlayerList(clientsArray) {
   // Only the current active player can click buttons
   if (GameState.activePlayerName === playerName) {
     document.getElementById("play-area").classList.remove("dim")
+    console.log(`✓ Your turn! (${playerName})`)
   } else {
     document.getElementById("play-area").classList.add("dim")
+    console.log(`⏳ Waiting for ${GameState.activePlayerName}'s turn...`)
   }
 }
 
