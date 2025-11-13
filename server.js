@@ -52,7 +52,7 @@ app.get('/create', (req, res) => {
     "clients": [],
     "showin": [],
     "number": 25,
-    "max": 2
+    "max": 5
   }
   io.emit("new-room", playload)
   res.render('index')
