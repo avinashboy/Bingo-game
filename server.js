@@ -162,7 +162,26 @@ io.on('connection', (socket) => {
     try {
       if (game === undefined) throw "Game not found or has been deleted";
 
-      io.sockets.to(data.room).emit('number', { name: data.altName, number: data.number, clients: game.clients });
+      // Validate that the next player (altName) exists in current player list
+      // If not, calculate the correct next player (handles disconnection edge cases)
+      let nextPlayerName = data.altName
+      const nextPlayerExists = game.clients.some(client => client.clientName === nextPlayerName)
+
+      if (!nextPlayerExists && game.clients.length > 0) {
+        // Find current player index and calculate next valid player
+        const currentPlayerName = rooms[gameId].users[socket.id]
+        const currentIndex = game.clients.findIndex(c => c.clientName === currentPlayerName)
+
+        if (currentIndex !== -1) {
+          const nextIndex = (currentIndex + 1) % game.clients.length
+          nextPlayerName = game.clients[nextIndex].clientName
+        } else {
+          // Fallback to first player if current player not found
+          nextPlayerName = game.clients[0].clientName
+        }
+      }
+
+      io.sockets.to(data.room).emit('number', { name: nextPlayerName, number: data.number, clients: game.clients });
     } catch (e) {
       console.log("error from catch", e);
     }
@@ -178,14 +197,28 @@ io.on('connection', (socket) => {
 
         // FIXED: Also remove from games.clients (was missing - memory leak!)
         if (games[roomId] && games[roomId].clients) {
+          // Find the disconnected player's index before removing
+          const disconnectedPlayerIndex = games[roomId].clients.findIndex(
+            client => client.socketId === socket.id
+          )
+
           games[roomId].clients = games[roomId].clients.filter(
             client => client.socketId !== socket.id
           )
 
+          // Calculate next active player if needed (for round-robin turn rotation)
+          let nextActivePlayer = null
+          if (games[roomId].clients.length > 0 && disconnectedPlayerIndex !== -1) {
+            // Pass turn to next player in round-robin fashion
+            const nextIndex = disconnectedPlayerIndex % games[roomId].clients.length
+            nextActivePlayer = games[roomId].clients[nextIndex].clientName
+          }
+
           // Notify remaining players
           io.sockets.to(roomId).emit('player-disconnected', {
             playerName: userName,
-            remainingPlayers: games[roomId].clients
+            remainingPlayers: games[roomId].clients,
+            nextActivePlayer: nextActivePlayer  // Tell clients who should have the turn now
           })
 
           // Clean up empty rooms
