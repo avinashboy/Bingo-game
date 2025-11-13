@@ -4,9 +4,12 @@ const express = require('express'),
   cors = require('cors'),
   body = require('body-parser')
 
-const port = process.env.PORT || 3000
+const config = require('./config')
+
+// Server configuration
+const port = config.PORT
 const rooms = {}, games = {}
-const toPop = 1
+const roomTimestamps = {} // Track room activity for cleanup
 
 // App config
 const app = express()
@@ -28,6 +31,24 @@ const server = app.listen(port, () => {
 });
 
 const io = socket(server)
+
+// Room cleanup mechanism - runs periodically to remove idle rooms
+setInterval(() => {
+  const now = Date.now()
+  Object.keys(roomTimestamps).forEach(roomId => {
+    const lastActivity = roomTimestamps[roomId]
+    const idleTime = now - lastActivity
+
+    // Clean up rooms that have been idle for more than IDLE_TIMEOUT_MS
+    if (idleTime > config.ROOM.IDLE_TIMEOUT_MS) {
+      if (rooms[roomId]) delete rooms[roomId]
+      if (games[roomId]) delete games[roomId]
+      delete roomTimestamps[roomId]
+      console.log(`Room ${roomId} cleaned up (idle for ${Math.round(idleTime / 60000)} minutes)`)
+    }
+  })
+}, config.ROOM.CLEANUP_INTERVAL_MS)
+
 // - API routes
 
 app.get('/', (req, res) => {
@@ -44,18 +65,26 @@ app.get('/join', (req, res) => {
 })
 
 app.get('/create', (req, res) => {
-  let playload = guid()
-  rooms[playload] = {
-    users: {}
+  const roomId = guid()
+
+  // Initialize room with proper structure
+  rooms[roomId] = {
+    users: {},
+    createdAt: Date.now()
   }
-  games[playload] = {
-    "clients": [],
-    "showin": [],
-    "number": 25,
-    "max": 5
+
+  games[roomId] = {
+    clients: [],
+    showin: [],
+    number: config.GAME.MAX_NUMBER,
+    max: config.ROOM.MAX_PLAYERS, // Now supports 6 players
+    min: config.ROOM.MIN_PLAYERS  // Minimum 2 players required
   }
-  io.emit("new-room", playload)
-  res.render('index')
+
+  roomTimestamps[roomId] = Date.now()
+
+  // Only emit to the creator (more efficient than io.emit to all)
+  res.render('index', { newRoomId: roomId })
 })
 
 
@@ -67,18 +96,47 @@ io.on('connection', (socket) => {
   })
 
   socket.on("user-name", data => {
-    socket.join(data.room)
-    rooms[data.room].users[socket.id] = data.name
-    const clientName = data.name
-    const gameId = data.room
-    const game = games[gameId]
+    const { name: clientName, room: roomId } = data
 
-    if (game.clients.length >= game.max) return socket.emit("goto-main-page")
+    // Validation: Check if room exists
+    if (!rooms[roomId] || !games[roomId]) {
+      return socket.emit("goto-main-page", { error: "Room not found" })
+    }
 
+    // Validation: Check if name is provided
+    if (!clientName || clientName.trim().length === 0) {
+      return socket.emit("goto-main-page", { error: "Name is required" })
+    }
+
+    const game = games[roomId]
+
+    // FIXED: Check player limit BEFORE adding (prevents race condition)
+    if (game.clients.length >= game.max) {
+      return socket.emit("goto-main-page", { error: "Room is full" })
+    }
+
+    // FIXED: Check for duplicate names
+    const isDuplicateName = game.clients.some(
+      client => client.clientName === clientName
+    )
+    if (isDuplicateName) {
+      return socket.emit("goto-main-page", { error: "Name already taken" })
+    }
+
+    // Now safe to add player
+    socket.join(roomId)
+    rooms[roomId].users[socket.id] = clientName
     game.clients.push({
-      "clientName": clientName
+      clientName: clientName,
+      socketId: socket.id, // Track socket ID for cleanup
+      joinedAt: Date.now()
     })
-    io.sockets.to(data.room).emit('list_of_user', game);
+
+    // Update room activity timestamp
+    roomTimestamps[roomId] = Date.now()
+
+    // Notify all players in the room
+    io.sockets.to(roomId).emit('list_of_user', game)
   })
 
   socket.on("uwin", data => {
@@ -107,8 +165,33 @@ io.on('connection', (socket) => {
   })
 
   socket.on('disconnect', () => {
-    getUserRoom(socket).forEach(room => {
-      delete rooms[room].users[socket.id]
+    getUserRoom(socket).forEach(roomId => {
+      // Remove from rooms
+      if (rooms[roomId] && rooms[roomId].users) {
+        const userName = rooms[roomId].users[socket.id]
+        delete rooms[roomId].users[socket.id]
+
+        // FIXED: Also remove from games.clients (was missing - memory leak!)
+        if (games[roomId] && games[roomId].clients) {
+          games[roomId].clients = games[roomId].clients.filter(
+            client => client.socketId !== socket.id
+          )
+
+          // Notify remaining players
+          io.sockets.to(roomId).emit('player-disconnected', {
+            playerName: userName,
+            remainingPlayers: games[roomId].clients
+          })
+
+          // Clean up empty rooms
+          if (games[roomId].clients.length === 0) {
+            delete rooms[roomId]
+            delete games[roomId]
+            delete roomTimestamps[roomId]
+            console.log(`Room ${roomId} cleaned up (no players)`)
+          }
+        }
+      }
     })
   })
 })
