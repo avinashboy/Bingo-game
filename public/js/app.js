@@ -167,6 +167,7 @@ function checkStrike(number) {
     }
   }
   ne = 0;
+  sum = 0;
   for (s = 0; s < m; s++) {
     sum = sum + martixArr[l][s];
   }
@@ -234,14 +235,13 @@ function showName(array) {
   array.forEach(element => {
     const spanName = document.createElement('span')
     dummyList.push(element.clientName)
+    spanName.innerText = element.clientName;
     if (serverName === element.clientName) {
       spanName.setAttribute('class', 'active')
-      spanName.innerText = element.clientName;
     }
     if (serverName === playerName) {
       document.getElementById("play-area").classList.remove("dim")
     }
-    spanName.innerText = element.clientName;
     showPlayer.appendChild(spanName)
   });
 }
