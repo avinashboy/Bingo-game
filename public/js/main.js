@@ -1,14 +1,12 @@
-const socket = io.connect(url)
-const demo = document.getElementById('demo')
-
 const btn = document.getElementById('btn')
 btn.addEventListener("click", () => {
-  axios.get(`${url}/create`)
+  const playerCount = document.getElementById('playerCount').value
+
+  axios.get(`${url}/create?maxPlayers=${playerCount}`)
     .then(response => {
       if (response.data && response.data.roomId) {
-        demo.value = `${url}/join?game=${response.data.roomId}`
-        $('#btn').fadeOut()
-        $('.hide_me').fadeIn()
+        // Redirect creator to join the game as the first player
+        window.location.href = `${url}/join?game=${response.data.roomId}`
       }
     })
     .catch(error => {
@@ -17,19 +15,4 @@ btn.addEventListener("click", () => {
     })
 })
 
-
 $("#year").text((new Date).getFullYear());
-socket.on("new-room", data => {
-  demo.value = `${url}/join?game=${data}`
-})
-
-var clipboard = new ClipboardJS('.btn');
-
-clipboard.on('success', function (e) {
-  e.clearSelection();
-});
-
-clipboard.on('error', function (e) {
-  // console.error('Action:', e.action);
-  // console.error('Trigger:', e.trigger);
-});

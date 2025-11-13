@@ -3,6 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D%2012.0.0-brightgreen.svg)](https://nodejs.org/)
 [![Live Demo](https://img.shields.io/badge/demo-live-success.svg)](https://bingogp.onrender.com/)
+[![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-5865F2?logo=anthropic&logoColor=white)](https://claude.ai/code)
 
 A real-time multiplayer Bingo game built with Node.js, Express, and Socket.io. Support for 2-6 players with optimized performance and scalability.
 
@@ -231,6 +232,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Built with [Socket.io](https://socket.io/) for real-time communication
 - Security powered by [Helmet.js](https://helmetjs.github.io/)
 - Deployed on [Render](https://render.com/)
+- Developed with [Claude Code](https://claude.ai/code) - AI-powered coding assistant by Anthropic
 
 ## Support
 
